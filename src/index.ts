@@ -2,6 +2,13 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { McpAgent } from "agents/mcp";
 import { z } from "zod";
 
+type Drand = {
+	round: number;
+	signature: string;
+	previous_signature: string;
+	randomness: string;
+};
+
 // Define our MCP agent with tools
 export class MyMCP extends McpAgent {
 	server = new McpServer({
@@ -51,6 +58,9 @@ export class MyMCP extends McpAgent {
 							};
 						result = a / b;
 						break;
+					default:
+						result = 0; // or throw an error
+						break;
 				}
 				return { content: [{ type: "text", text: String(result) }] };
 			},
@@ -64,7 +74,8 @@ export class MyMCP extends McpAgent {
 					const response = await fetch(
 						"https://drand.cloudflare.com/public/latest",
 					);
-					const data = await response.json();
+
+					const data = (await response.json()) as Drand;
 
 					const randomHex = data.randomness;
 					const startIndex = Math.floor(Math.random() * (randomHex.length - 8));
